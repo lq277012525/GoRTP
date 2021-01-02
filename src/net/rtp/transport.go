@@ -22,6 +22,7 @@ type TransportRecv interface {
 	ListenOnTransports() error
 	OnRecvData(rp *DataPacket) bool
 	OnRecvCtrl(rp *CtrlPacket) bool
+	OnRecvRaw(rp *RawPacket) bool
 	SetCallUpper(upper TransportRecv)
 	CloseRecv()
 	SetEndChannel(ch TransportEnd)
@@ -30,6 +31,7 @@ type TransportRecv interface {
 type TransportWrite interface {
 	WriteDataTo(rp *DataPacket, addr *Address) (n int, err error)
 	WriteCtrlTo(rp *CtrlPacket, addr *Address) (n int, err error)
+	WriteRawTo(rp *RawPacket, addr *Address) (n int, err error)
 	SetToLower(lower TransportWrite)
 	CloseWrite()
 }

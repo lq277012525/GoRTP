@@ -36,6 +36,7 @@ type Session struct {
 	MaxNumberInStreams  int // Applications may set this to increase the number of supported input streams
 
 	dataReceiveChan DataReceiveChan
+	rawReceiveChan  RawReceiveChan
 	ctrlEventChan   CtrlEventChan
 
 	streamsMapMutex sync.Mutex // synchronize activities on stream maps
@@ -87,6 +88,7 @@ type TransportEnd chan int
 
 // Use a channel to send RTP data packets to the upper layer application.
 type DataReceiveChan chan *DataPacket
+type RawReceiveChan chan *RawPacket
 
 // Use a channel to send RTCP control events to the upper layer application.
 type CtrlEventChan chan []*CtrlEvent
@@ -317,6 +319,10 @@ func (rs *Session) CreateDataReceiveChan() DataReceiveChan {
 	rs.dataReceiveChan = make(DataReceiveChan, dataReceiveChanLen)
 	return rs.dataReceiveChan
 }
+func (rs *Session) CreateRawReceiveChan() RawReceiveChan {
+	rs.rawReceiveChan = make(RawReceiveChan, dataReceiveChanLen)
+	return rs.rawReceiveChan
+}
 
 // RemoveDataReceivedChan deletes the data received channel.
 //
@@ -327,6 +333,12 @@ func (rs *Session) RemoveDataReceiveChan() {
 		close(rs.dataReceiveChan)
 	}
 	rs.dataReceiveChan = nil
+}
+func (rs *Session) RemoveRawReceiveChan() {
+	if rs.rawReceiveChan != nil {
+		close(rs.rawReceiveChan)
+	}
+	rs.rawReceiveChan = nil
 }
 
 // CreateCtrlEventChan creates the control event channel and returns it to the caller.
@@ -680,6 +692,15 @@ func (rs *Session) OnRecvCtrl(rp *CtrlPacket) bool {
 
 	rp.FreePacket()
 	ctrlEvArr = nil
+	return true
+}
+func (rs *Session) OnRecvRaw(rp *RawPacket) bool {
+	select {
+	case rs.rawReceiveChan <- rp: // forwarded packet, that's all folks
+	default:
+
+	}
+
 	return true
 }
 

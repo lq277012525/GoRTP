@@ -90,6 +90,10 @@ func (tp *TransportUDP) OnRecvCtrl(rp *CtrlPacket) bool {
 	fmt.Printf("TransportUDP: no registered upper layer RTCP packet handler\n")
 	return false
 }
+func (tp *TransportUDP) OnRecvRaw(rp *RawPacket) bool {
+	fmt.Printf("TransportUDP: no registered upper layer raw packet handler\n")
+	return false
+}
 
 // CloseRecv implements the rtp.TransportRecv CloseRecv method.
 func (tp *TransportUDP) CloseRecv() {
@@ -129,6 +133,9 @@ func (tp *TransportUDP) WriteDataTo(rp *DataPacket, addr *Address) (n int, err e
 
 // WriteRtcpTo implements the rtp.TransportWrite WriteRtcpTo method.
 func (tp *TransportUDP) WriteCtrlTo(rp *CtrlPacket, addr *Address) (n int, err error) {
+	return tp.ctrlConn.WriteToUDP(rp.buffer[0:rp.inUse], &net.UDPAddr{addr.IPAddr, addr.CtrlPort, addr.Zone})
+}
+func (tp *TransportUDP) WriteRawTo(rp *RawPacket, addr *Address) (n int, err error) {
 	return tp.ctrlConn.WriteToUDP(rp.buffer[0:rp.inUse], &net.UDPAddr{addr.IPAddr, addr.CtrlPort, addr.Zone})
 }
 
