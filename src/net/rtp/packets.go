@@ -128,6 +128,7 @@ func (rp *RawPacket) Append(in []byte) {
 			bf := make([]byte, rp.inUse+len(in))
 			copy(bf, rp.buffer[:rp.inUse])
 			copy(bf[:rp.inUse], in)
+			rp.buffer = bf
 			rp.inUse += len(in)
 		}
 	} else {
