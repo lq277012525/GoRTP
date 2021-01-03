@@ -133,7 +133,7 @@ func (rp *RawPacket) Append(in []byte) {
 		}
 	} else {
 		copy(rp.buffer[rp.inUse:], in)
-		rp.inUse += rp.inUse
+		rp.inUse += len(in)
 	}
 }
 

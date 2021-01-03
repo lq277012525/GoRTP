@@ -163,6 +163,7 @@ func (tp *TransportTCP) readDataPacket() {
 				rp.fromAddr.IPAddr = tp.remoteAddr.IP
 				rp.fromAddr.DataPort = tp.remoteAddr.Port
 				rp.fromAddr.CtrlPort = 0
+				rp.inUse = 0
 				rp.Append(data)
 				if tp.callUpper != nil {
 					tp.callUpper.OnRecvData(rp)
@@ -174,6 +175,7 @@ func (tp *TransportTCP) readDataPacket() {
 				rp.fromAddr.IPAddr = tp.remoteAddr.IP
 				rp.fromAddr.DataPort = 0
 				rp.fromAddr.CtrlPort = tp.remoteAddr.Port
+				rp.inUse = 0
 				rp.Append(data)
 				if tp.callUpper != nil {
 					tp.callUpper.OnRecvCtrl(rp)
@@ -184,6 +186,7 @@ func (tp *TransportTCP) readDataPacket() {
 			rp.fromAddr.IPAddr = tp.remoteAddr.IP
 			rp.fromAddr.DataPort = tp.remoteAddr.Port
 			rp.fromAddr.CtrlPort = int(ty)
+			rp.inUse = 0
 			rp.Append(data)
 			if tp.callUpper != nil {
 				tp.callUpper.OnRecvRaw(rp)
