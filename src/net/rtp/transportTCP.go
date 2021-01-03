@@ -147,7 +147,7 @@ func (tp *TransportTCP) readDataPacket() {
 	//var buf [1500]byte
 
 	tp.dataRecvStop = false
-	for {
+	for !tp.dataRecvStop {
 		// deadLineErr := tp.dataConn.SetReadDeadline(time.Now().Add(20 * time.Millisecond)) // 20 ms, re-test and remove after Go issue 2116 is solved
 		data, ty, err := tp.packerizer.UnPack(tp.dataConn)
 		if err != nil {
