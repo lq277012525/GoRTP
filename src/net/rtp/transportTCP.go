@@ -163,10 +163,9 @@ func (tp *TransportTCP) readDataPacket() {
 				rp.fromAddr.IPAddr = tp.remoteAddr.IP
 				rp.fromAddr.DataPort = tp.remoteAddr.Port
 				rp.fromAddr.CtrlPort = 0
-				rp.inUse = len(data)
-				copy(rp.buffer, data)
+				rp.Append(data)
 				if tp.callUpper != nil {
-					tp.callUpper.OnRecvData(rp)
+					tp.callUpper.OnRecvCtrl(rp)
 				}
 			}
 		case TCPPackerizerRTCPData:
@@ -175,8 +174,7 @@ func (tp *TransportTCP) readDataPacket() {
 				rp.fromAddr.IPAddr = tp.remoteAddr.IP
 				rp.fromAddr.DataPort = 0
 				rp.fromAddr.CtrlPort = tp.remoteAddr.Port
-				rp.inUse = len(data)
-				copy(rp.buffer, data)
+				rp.Append(data)
 				if tp.callUpper != nil {
 					tp.callUpper.OnRecvCtrl(rp)
 				}
@@ -186,8 +184,7 @@ func (tp *TransportTCP) readDataPacket() {
 			rp.fromAddr.IPAddr = tp.remoteAddr.IP
 			rp.fromAddr.DataPort = tp.remoteAddr.Port
 			rp.fromAddr.CtrlPort = int(ty)
-			rp.inUse = len(data)
-			copy(rp.buffer, data)
+			rp.Append(data)
 			if tp.callUpper != nil {
 				tp.callUpper.OnRecvRaw(rp)
 			}

@@ -119,6 +119,22 @@ func (rp *RawPacket) Buffer() []byte {
 func (rp *RawPacket) InUse() int {
 	return rp.inUse
 }
+func (rp *RawPacket) Append(in []byte) {
+	if len(rp.buffer)-rp.inUse < len(in) {
+		if rp.inUse == 0 {
+			rp.inUse = len(in)
+			rp.buffer = in
+		} else {
+			bf := make([]byte, rp.inUse+len(in))
+			copy(bf, rp.buffer[:rp.inUse])
+			copy(bf[:rp.inUse], in)
+			rp.inUse += len(in)
+		}
+	} else {
+		copy(rp.buffer[rp.inUse:], in)
+		rp.inUse += rp.inUse
+	}
+}
 
 // *** RTP specific functions start here ***
 

@@ -170,8 +170,7 @@ func (tp *TransportUDP) readDataPacket() {
 		rp.fromAddr.IPAddr = addr.IP
 		rp.fromAddr.DataPort = addr.Port
 		rp.fromAddr.CtrlPort = 0
-		rp.inUse = n
-		copy(rp.buffer, buf[0:n])
+		rp.Append(buf[0:n])
 
 		if tp.callUpper != nil {
 			tp.callUpper.OnRecvData(rp)
@@ -198,9 +197,7 @@ func (tp *TransportUDP) readCtrlPacket() {
 		rp.fromAddr.IPAddr = addr.IP
 		rp.fromAddr.CtrlPort = addr.Port
 		rp.fromAddr.DataPort = 0
-		rp.inUse = n
-		copy(rp.buffer, buf[0:n])
-
+		rp.Append(buf[0:n])
 		if tp.callUpper != nil {
 			tp.callUpper.OnRecvCtrl(rp)
 		}
