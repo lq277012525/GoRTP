@@ -165,7 +165,7 @@ func (tp *TransportTCP) readDataPacket() {
 				rp.fromAddr.CtrlPort = 0
 				rp.Append(data)
 				if tp.callUpper != nil {
-					tp.callUpper.OnRecvCtrl(rp)
+					tp.callUpper.OnRecvData(rp)
 				}
 			}
 		case TCPPackerizerRTCPData:
