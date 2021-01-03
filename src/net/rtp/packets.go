@@ -120,7 +120,7 @@ func (rp *RawPacket) InUse() int {
 	return rp.inUse
 }
 func (rp *RawPacket) Append(in []byte) {
-	if cap(rp.buffer)-rp.inUse < len(in) {
+	if len(rp.buffer)-rp.inUse < len(in) {
 		if rp.inUse == 0 {
 			rp.inUse = len(in)
 			rp.buffer = in
