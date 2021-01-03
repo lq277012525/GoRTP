@@ -22,6 +22,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"sync"
 )
 
 const (
@@ -145,20 +146,18 @@ type DataPacket struct {
 	payloadLength int16
 }
 
-var freeListRtp = make(chan *DataPacket, freeListLengthRtp)
+var freeListRtp = sync.Pool{New: func() interface{} {
+	rp := new(DataPacket) // None free, so allocate a new one.
+	rp.buffer = make([]byte, defaultBufferSize)
+	return rp
+}}
 
 func newDataPacket() (rp *DataPacket) {
 	// Grab a packet if available; allocate if not.
-	select {
-	case rp = <-freeListRtp: // Got one; nothing more to do.
-	default:
-		rp = new(DataPacket) // None free, so allocate a new one.
-		rp.buffer = make([]byte, defaultBufferSize)
-	}
+	rp = freeListRtp.Get().(*DataPacket)
 	rp.buffer[0] = version2Bit // RTP: V = 2, P, X, CC = 0
 	rp.inUse = rtpHeaderLength
 	rp.isFree = false
-
 	return
 }
 
@@ -177,10 +176,7 @@ func (rp *DataPacket) FreePacket() {
 	rp.fromAddr.IPAddr = nil
 	rp.isFree = true
 
-	select {
-	case freeListRtp <- rp: // Packet on free list; nothing more to do.
-	default: // Free list full, just carry on.
-	}
+	freeListRtp.Put(rp)
 }
 
 // Clone returns an exact clone of the original packet
@@ -507,17 +503,17 @@ type CtrlPacket struct {
 	RawPacket
 }
 
-var freeListRtcp = make(chan *CtrlPacket, freeListLengthRtcp)
+//var freeListRtcp = make(chan *CtrlPacket, freeListLengthRtcp)
+var freeListRtcp = sync.Pool{New: func() interface{} {
+	rp := new(CtrlPacket) // None free, so allocate a new one.
+	rp.buffer = make([]byte, defaultBufferSize)
+	return rp
+}}
 
 // newCtrlPacket gets a raw packet, initializes the first fixed RTCP header, advances inUse to point after new fixed header.
 func newCtrlPacket() (rp *CtrlPacket, offset int) {
 	// Grab a packet if available; allocate if not.
-	select {
-	case rp = <-freeListRtcp: // Got one; nothing more to do.
-	default:
-		rp = new(CtrlPacket) // None free, so allocate a new one.
-		rp.buffer = make([]byte, defaultBufferSize)
-	}
+	rp = freeListRtcp.Get().(*CtrlPacket)
 	rp.buffer[0] = version2Bit // RTCP: V = 2, P, RC = 0
 	rp.inUse = rtcpHeaderLength
 	offset = rtcpHeaderLength
@@ -549,10 +545,7 @@ func (rp *CtrlPacket) FreePacket() {
 	rp.fromAddr.IPAddr = nil
 	rp.isFree = true
 
-	select {
-	case freeListRtcp <- rp: // Packet on free list; nothing more to do.
-	default: // Free list full, just carry on.
-	}
+	freeListRtcp.Put(rp)
 }
 
 // SetSsrc converts SSRC from host order into network order and stores it in the RTCP as packet sender.
